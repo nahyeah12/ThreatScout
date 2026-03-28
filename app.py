@@ -18,6 +18,10 @@ from simulation.behaviour import update_behaviour, inject_insider
 from core.anomaly         import build_and_train_detector
 from core.risk            import update_risk_scores, get_alerts
 
+from core.fuzzy import (
+    anomaly_low, anomaly_medium, anomaly_high,
+    deviation_low, deviation_medium, deviation_high
+)
 # =============================================================================
 # Page config
 # =============================================================================
@@ -286,16 +290,75 @@ with right:
         st.plotly_chart(fig_radar, use_container_width=True)
 
         # ---- Explanation panel -------------------------------------------
-        st.markdown("#### 🧠 Fuzzy Explanation")
+        st.markdown("#### Fuzzy Explanation")
+        explanation = selected["explanation"]
+
+        # Remove markdown
+        explanation = explanation.replace("**", "").replace("*", "")
+
+        # Break into lines more cleanly
+        explanation = explanation.replace(". ", ".<br><br>")
+
+        # Highlight key parts
+        explanation = explanation.replace("Risk assessed as", "<b>Risk assessed as</b>")
+        explanation = explanation.replace("Dominant rule:", "<br><b>Dominant rule:</b>")
+
         st.markdown(
-            f"<div class='explanation-box'>{selected['explanation']}</div>",
+            f"<div class='explanation-box'>{explanation}</div>",
             unsafe_allow_html=True,
         )
         st.write("")
+                # ---- Membership Function Visualization -------------------------
+        st.markdown("#### Membership Functions")
 
+        import numpy as np
+
+        x = np.linspace(0, 1, 200)
+
+        # ---- Anomaly Membership Plot
+        fig_anomaly = go.Figure()
+        fig_anomaly.add_trace(go.Scatter(x=x, y=[anomaly_low(v) for v in x], name="Low"))
+        fig_anomaly.add_trace(go.Scatter(x=x, y=[anomaly_medium(v) for v in x], name="Medium"))
+        fig_anomaly.add_trace(go.Scatter(x=x, y=[anomaly_high(v) for v in x], name="High"))
+
+        fig_anomaly.update_layout(
+            title="Anomaly Score Membership",
+            xaxis_title="Anomaly Score",
+            yaxis_title="Membership Degree",
+            height=250,
+            margin=dict(t=40, b=20)
+        )
+        fig_anomaly.add_vline(
+            x=selected["anomaly_score"],
+            line_dash="dash",
+            annotation_text="Current",
+            annotation_position="top"
+        )
+        st.plotly_chart(fig_anomaly, use_container_width=True)
+
+        # ---- Deviation Membership Plot
+        fig_deviation = go.Figure()
+        fig_deviation.add_trace(go.Scatter(x=x, y=[deviation_low(v) for v in x], name="Low"))
+        fig_deviation.add_trace(go.Scatter(x=x, y=[deviation_medium(v) for v in x], name="Medium"))
+        fig_deviation.add_trace(go.Scatter(x=x, y=[deviation_high(v) for v in x], name="High"))
+
+        fig_deviation.update_layout(
+            title="Deviation Score Membership",
+            xaxis_title="Deviation Score",
+            yaxis_title="Membership Degree",
+            height=250,
+            margin=dict(t=40, b=20)
+        )
+        fig_deviation.add_vline(
+            x=selected["deviation_score"],
+            line_dash="dash",
+            annotation_text="Current",
+            annotation_position="top"
+        )
+        st.plotly_chart(fig_deviation, use_container_width=True)
         # ---- Fired rules -------------------------------------------------
         if selected["fired_rules"]:
-            st.markdown("#### 🔥 Fired Rules")
+            st.markdown("#### Fired Rules")
             for rule in sorted(selected["fired_rules"],
                                key=lambda x: x["strength"], reverse=True):
                 bar_w = int(rule["strength"] * 100)

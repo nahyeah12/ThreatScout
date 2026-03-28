@@ -1,7 +1,7 @@
-# 🛡️ ThreatScout
+# ThreatScout
 > **Explainable Hybrid Insider Threat Detection using Fuzzy Behavioral Fingerprinting**
 
-ThreatScout models every employee as a **behavioral fingerprint** and detects insider threats by tracking deviations from their personal baseline using a hybrid Isolation Forest + Fuzzy Logic pipeline — with full plain-English explainability.
+ThreatScout models every employee as a **behavioral fingerprint** and detects insider threats by tracking deviations from their personal baseline using a hybrid Isolation Forest + Fuzzy Logic pipeline with full plain-English explainability.
 
 ---
 
